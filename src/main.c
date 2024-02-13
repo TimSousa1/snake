@@ -50,7 +50,7 @@ int main(void){
 
     while (1){
         clock_gettime(CLOCK_MONOTONIC, &initFRAME);
-        printf("\033[H\033[J");
+        printf("\033[H\033[J");                       // clearing screen
         print_board(board);
 
         read(STDIN_FILENO, &key, sizeof(key));
