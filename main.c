@@ -4,6 +4,10 @@
 #include <termios.h>
 
 #include "term.h"
+#include "snake.h"
+
+#define LINES 15
+#define COLS 30
 
 double read_time(struct timespec *a){
     double s;
@@ -23,14 +27,14 @@ struct timespec timeDiff(struct timespec *a, struct timespec *b){
 }
 
 int main(void){
+    // getting terminal ready
     struct termios original;
     enableRAW(&original);
 
+    // frametime info
     struct timespec initFRAME;
     struct timespec midFRAME;
     struct timespec endFRAME;
-
-    char c;
 
     struct timespec ft;         // time that should be spent
     struct timespec pt;         // time spent processing
@@ -40,15 +44,20 @@ int main(void){
     ft.tv_sec = 0;
     ft.tv_nsec = 0.1 * 1e9;
 
+    // game
+    char key;
+    Board *board = create_board(LINES, COLS);
+
     while (1){
         clock_gettime(CLOCK_MONOTONIC, &initFRAME);
         printf("\033[H\033[J");
+        print_board(board);
 
-        read(STDIN_FILENO, &c, sizeof(c));
+        read(STDIN_FILENO, &key, sizeof(key));
         tcflush(STDIN_FILENO, TCIFLUSH);              // flushing what wasn't read
-        printf("got %c from stdin in RAW mode\n", c);
+        // printf("got %c from stdin in RAW mode\n", key);
 
-        if (c == 'q') break;
+        if (key == 'q') break;
 
         clock_gettime(CLOCK_MONOTONIC, &midFRAME);
         pt = timeDiff(&midFRAME, &initFRAME);
@@ -58,7 +67,7 @@ int main(void){
         clock_gettime(CLOCK_MONOTONIC,&endFRAME);
 
         dt = timeDiff(&endFRAME, &initFRAME);
-        printf("time taken on frame: %lf\n", read_time(&dt));
+        // printf("time taken on frame: %lf\n", read_time(&dt));
     }
 
     disableRAW(&original);
