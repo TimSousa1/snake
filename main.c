@@ -1,4 +1,3 @@
-#include <bits/time.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
@@ -43,17 +42,21 @@ int main(void){
 
     while (1){
         clock_gettime(CLOCK_MONOTONIC, &initFRAME);
+        printf("\033[H\033[J");
 
         read(STDIN_FILENO, &c, sizeof(c));
         tcflush(STDIN_FILENO, TCIFLUSH);              // flushing what wasn't read
         printf("got %c from stdin in RAW mode\n", c);
+
         if (c == 'q') break;
 
         clock_gettime(CLOCK_MONOTONIC, &midFRAME);
         pt = timeDiff(&midFRAME, &initFRAME);
         remaining = timeDiff(&ft, &pt);
+
         nanosleep(&remaining, NULL);
         clock_gettime(CLOCK_MONOTONIC,&endFRAME);
+
         dt = timeDiff(&endFRAME, &initFRAME);
         printf("time taken on frame: %lf\n", read_time(&dt));
     }
