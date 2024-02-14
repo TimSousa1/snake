@@ -13,7 +13,7 @@ struct termios {
 */
 
 // TCSAFLUSH (when to apply change) waits for all output and discards unread input
-int enableRAW(struct termios *original){
+int enableRAW(struct termios *original, int updateTime){
     struct termios raw;
 
     if (tcgetattr(STDIN_FILENO, original) == -1) return -1;
@@ -21,7 +21,7 @@ int enableRAW(struct termios *original){
     raw = *original;
     raw.c_lflag &= ~(ECHO | ICANON);         // toggling both COOKED and ECHO mode
 
-    raw.c_cc[VTIME] = 1;                     // time between bytes in tenths of a second
+    raw.c_cc[VTIME] = updateTime;            // time between bytes in tenths of a second
     raw.c_cc[VMIN] = 0;                      // min number of bytes
 
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) return -1;

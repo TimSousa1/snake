@@ -4,7 +4,9 @@
 #include <termios.h>
 #include <unistd.h>
 
-int enableRAW(struct termios *original);
+#define clear_screen() printf("\033[H\033[J")
+
+int enableRAW(struct termios *original, int updateTime);
 int disableRAW(struct termios *original);
 
 #endif
