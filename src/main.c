@@ -60,12 +60,18 @@ int main(void){
 
     player.size = 1;
     player.hasGrown = 0;
+    player.isDead = 0;
     player.direction = RIGHT;
     player.head = &start;
     player.head->next = NULL;
     player.tail = player.head;
 
-    for (int i = 1; i < INIT_SIZE; i++) grow_snake(&player);
+    for (int i = 1; i < INIT_SIZE; i++) {
+        grow_snake(&player);
+        move_player(&player);
+    }
+
+    create_apple(board, &player);
 
     while (1){
         clock_gettime(CLOCK_MONOTONIC, &initFRAME);
@@ -73,9 +79,11 @@ int main(void){
         move_player(&player);
 
         update_board(board, &player);
-        print_board(board);
 
-        print_player(&player);
+        if (player.isDead) break;
+
+        print_board(board);
+        printf("score: %i\n", player.size - INIT_SIZE);
 
         printf("\n[%c](%i)\npress 'q' to exit\n", key, player.direction);
 

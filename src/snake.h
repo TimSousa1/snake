@@ -18,6 +18,7 @@ typedef struct {
     int direction;
 
     int hasGrown;
+    int isDead;
 
     int size;   // might now matter
 
@@ -28,6 +29,8 @@ typedef struct {
 typedef struct {
     int cols;
     int lines;
+
+    int apple[2];
 
     char **matrix;
 } Board;
@@ -44,5 +47,7 @@ void move_player(Player*);
 void set_player_direction(Player *player, char key);
 void grow_snake(Player *player);
 void print_player(Player *player);
+
+void create_apple(Board *board, Player *player);
 
 #endif

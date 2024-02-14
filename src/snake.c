@@ -1,9 +1,24 @@
 #include "snake.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define EMPTY ' '
 #define SNAKE '#'
+#define APPLE 'o'
+
+void create_apple(Board *board, Player *player){
+    int pos, posx, posy;
+    srand(time(0));
+
+    pos = rand() % (board->cols * board->lines);
+
+    posx = pos % board->cols;
+    posy = pos / board->cols;
+
+    board->apple[0] = posx;
+    board->apple[1] = posy;
+}
 
 void grow_snake(Player *player){
     Body *new = malloc (sizeof(*new));
@@ -15,6 +30,7 @@ void grow_snake(Player *player){
 
     player->tail = new;
     player->hasGrown = 1;
+    player->size++;
 }
 
 void set_player_direction(Player *player, char key){
@@ -95,12 +111,29 @@ void print_player(Player *player){
 void update_board(Board *board, Player *player){
     fill_board(board, EMPTY);
 
+    board->matrix[board->apple[1]][board->apple[0]] = APPLE;
+
+    char c;
     for (Body *iteration = player->tail; iteration; iteration = iteration->next){
         iteration->posx += board->cols * (iteration->posx <= 0);
         iteration->posy += board->lines * (iteration->posy <= 0);
 
         iteration->posx %= board->cols;
         iteration->posy %= board->lines;
+
+        c = board->matrix[iteration->posy][iteration->posx];
+
+        // this func shouldn't handle this
+        if (c == SNAKE){
+            player->isDead = 1;
+            break;
+        }
+
+        // nor this
+        if (c == APPLE) {
+            grow_snake(player);
+            create_apple(board, player);
+        }
 
         board->matrix[iteration->posy][iteration->posx] = SNAKE;
     }
@@ -159,11 +192,15 @@ void free_board(Board *board){
 }
 
 void print_board(Board *board){
-    for (int i = 0; i < board->cols; i++) putchar('_');
+    putchar('|');
+    for (int i = 0; i < board->cols; i++) putchar('-');
+    putchar('|');
     printf("\n");
     for (int i = 0; i < board->lines; i++){
         printf("|%s|\n", board->matrix[i]);
     }
-    for (int i = 0; i < board->cols; i++) putchar('_');
+    putchar('|');
+    for (int i = 0; i < board->cols; i++) putchar('-');
+    putchar('|');
     printf("\n");
 }
