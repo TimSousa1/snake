@@ -9,6 +9,9 @@
 #define LINES 15
 #define COLS 30
 
+#define SPEED .5
+
+
 double read_time(struct timespec *a){
     double s;
     s = a->tv_sec;
@@ -17,7 +20,7 @@ double read_time(struct timespec *a){
     return s;
 }
 
-struct timespec timeDiff(struct timespec *a, struct timespec *b){
+struct timespec time_diff(struct timespec *a, struct timespec *b){
     struct timespec diff;
 
     diff.tv_sec = a->tv_sec - b->tv_sec;
@@ -29,7 +32,7 @@ struct timespec timeDiff(struct timespec *a, struct timespec *b){
 int main(void){
     // getting terminal ready
     struct termios original;
-    enableRAW(&original);
+    enableRAW(&original, SPEED * 10);       // SPEED should be set on a different func
 
     // frametime info
     struct timespec initFRAME;
@@ -42,16 +45,32 @@ int main(void){
     struct timespec remaining;  // time to wait for next frame
 
     ft.tv_sec = 0;
-    ft.tv_nsec = 0.1 * 1e9;
+    ft.tv_nsec = 0.5 * 1e9;
 
     // game
     char key;
     Board *board = create_board(LINES, COLS);
 
+    Player player;
+    Body start;
+
+    start.posx = board->cols / 2;
+    start.posy = board->lines / 2;
+
+    player.size = 1;
+    player.direction = RIGHT;
+    player.head = &start;
+    player.head->next = NULL;
+    player.tail = player.head;
+
     while (1){
         clock_gettime(CLOCK_MONOTONIC, &initFRAME);
-        printf("\033[H\033[J");                       // clearing screen
+        clear_screen();
+        move_player(&player);
+        update_board(board, &player);
         print_board(board);
+
+        printf("\n[%c](%i)\npress 'q' to exit\n", key, player.direction);
 
         read(STDIN_FILENO, &key, sizeof(key));
         tcflush(STDIN_FILENO, TCIFLUSH);              // flushing what wasn't read
@@ -59,14 +78,32 @@ int main(void){
 
         if (key == 'q') break;
 
+        switch (key) {
+            case 'w':
+                player.direction = UP;
+                break;
+            case 'a':
+                player.direction = LEFT;
+                break;
+            case 's':
+                player.direction = DOWN;
+                break;
+            case 'd':
+                player.direction = RIGHT;
+                break;
+
+            default:
+                break;
+        }
+
         clock_gettime(CLOCK_MONOTONIC, &midFRAME);
-        pt = timeDiff(&midFRAME, &initFRAME);
-        remaining = timeDiff(&ft, &pt);
+        pt = time_diff(&midFRAME, &initFRAME);
+        remaining = time_diff(&ft, &pt);
 
         nanosleep(&remaining, NULL);
         clock_gettime(CLOCK_MONOTONIC,&endFRAME);
 
-        dt = timeDiff(&endFRAME, &initFRAME);
+        dt = time_diff(&endFRAME, &initFRAME);
         // printf("time taken on frame: %lf\n", read_time(&dt));
     }
 

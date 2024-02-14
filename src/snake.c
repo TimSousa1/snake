@@ -3,6 +3,34 @@
 #include <stdlib.h>
 
 #define EMPTY '$'
+#define SNAKE '#'
+
+void move_player(Player *player){
+    for (Body *iteration = player->tail; iteration; iteration = iteration->next){
+        switch (player->direction) {
+            case UP:
+                iteration->posy--;
+                break;
+            case DOWN:
+                iteration->posy++;
+                break;
+            case LEFT:
+                iteration->posx--;
+                break;
+            case RIGHT:
+                iteration->posx++;
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+void update_board(Board *board, Player *player){
+    for (Body *iteration = player->tail; iteration; iteration = iteration->next){
+        board->matrix[iteration->posy % board->lines][iteration->posx % board->cols] = SNAKE;
+    }
+}
 
 Board *create_board(int lines, int cols){
     Board *board = alloc_board(lines, cols);
