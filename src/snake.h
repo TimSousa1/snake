@@ -17,7 +17,9 @@ typedef struct _body {
 typedef struct {
     int direction;
 
-    int size;
+    int hasGrown;
+
+    int size;   // might now matter
 
     Body *head;
     Body *tail;
@@ -39,5 +41,8 @@ Board *alloc_board(int lines, int cols);
 void free_board(Board*);
 
 void move_player(Player*);
+void set_player_direction(Player *player, char key);
+void grow_snake(Player *player);
+void print_player(Player *player);
 
 #endif

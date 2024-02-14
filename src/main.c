@@ -9,7 +9,8 @@
 #define LINES 15
 #define COLS 30
 
-#define SPEED .5
+#define SPEED .2
+#define INIT_SIZE 3
 
 
 double read_time(struct timespec *a){
@@ -32,7 +33,7 @@ struct timespec time_diff(struct timespec *a, struct timespec *b){
 int main(void){
     // getting terminal ready
     struct termios original;
-    enableRAW(&original, SPEED * 10);       // SPEED should be set on a different func
+    enableRAW(&original, SPEED * 10);       // SPEED should be set on a different func (speeding game up if needed)
 
     // frametime info
     struct timespec initFRAME;
@@ -45,7 +46,7 @@ int main(void){
     struct timespec remaining;  // time to wait for next frame
 
     ft.tv_sec = 0;
-    ft.tv_nsec = 0.5 * 1e9;
+    ft.tv_nsec = SPEED * 1e9;
 
     // game
     char key;
@@ -58,17 +59,23 @@ int main(void){
     start.posy = board->lines / 2;
 
     player.size = 1;
+    player.hasGrown = 0;
     player.direction = RIGHT;
     player.head = &start;
     player.head->next = NULL;
     player.tail = player.head;
 
+    for (int i = 1; i < INIT_SIZE; i++) grow_snake(&player);
+
     while (1){
         clock_gettime(CLOCK_MONOTONIC, &initFRAME);
         clear_screen();
         move_player(&player);
+
         update_board(board, &player);
         print_board(board);
+
+        print_player(&player);
 
         printf("\n[%c](%i)\npress 'q' to exit\n", key, player.direction);
 
@@ -78,23 +85,7 @@ int main(void){
 
         if (key == 'q') break;
 
-        switch (key) {
-            case 'w':
-                player.direction = UP;
-                break;
-            case 'a':
-                player.direction = LEFT;
-                break;
-            case 's':
-                player.direction = DOWN;
-                break;
-            case 'd':
-                player.direction = RIGHT;
-                break;
-
-            default:
-                break;
-        }
+        set_player_direction(&player, key);
 
         clock_gettime(CLOCK_MONOTONIC, &midFRAME);
         pt = time_diff(&midFRAME, &initFRAME);
